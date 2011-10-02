@@ -200,6 +200,7 @@ class Run(BaseHandler):
                 memcache.set(cron.url, 1, time = 30)
                 cron.lastrun = db.DateTimeProperty.now()
                 cron.save()
+                made_changes()
 
         db.run_in_transaction(intransaction)
 
