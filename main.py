@@ -12,6 +12,8 @@ import logging
 import time
 import os
 
+ALLMINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+
 DAYS  = [
     "MONDAY",
     "TUESDAY",
@@ -39,11 +41,33 @@ MONTHS = [
 
 def get_all_crons():
     "latest 100 crons"
-    return Crons().all().order('-created').fetch(100)
+    result = memcache.get('all_crons')
+    if not result:
+        result = Crons().all().order('-created').fetch(1000)
+        memcache.set('all_crons', result)
+    return result
 
-def to_int_list(list):
+def get_active_crons():
+    result = memcache.get('active_crons', None)
+    if not result:
+        result = Crons.all().filter('active =', True)
+        memcache.set('active_crons', result)
+    return result
+
+def made_changes():
+    memcache.delete('all_crons')
+    memcache.delete('active_crons')
+
+def to_int_list(list, allowed = None):
     if list:
-        return map(int, list)
+        result = map(int, list)
+        if allowed is not None:
+            checked_result = []
+            for tmp in result:
+                if tmp in allowed:
+                    checked_result.append(tmp)
+            result = checked_result
+        return result
     return []
 
 def get_cron_by_id(id):
@@ -63,7 +87,7 @@ class BaseHandler(webapp.RequestHandler):
         if data is None:
             data = {}
         extra = {
-         'allminutes': range(0, 60),
+         'allminutes': ALLMINUTES,
            'allhours': range(0, 24),
         'allweekdays': DAYS,
                 'now': db.DateTimeProperty.now(),
@@ -98,7 +122,7 @@ class Add(BaseHandler):
             cron = Crons()
         cron.name = self.request.get('name')
         cron.url    = self.request.get('url')
-        cron.minutes = to_int_list(self.request.get_all('minutes'))
+        cron.minutes = to_int_list(self.request.get_all('minutes'), ALLMINUTES)
         cron.hours = to_int_list(self.request.get_all('hours'))
         cron.weekdays = to_int_list(self.request.get_all('weekdays'))
         cron.method = self.request.get('method')
@@ -109,6 +133,7 @@ class Add(BaseHandler):
         else:
             cron.payload = self.request.get('payload') or ''
         cron.save()
+        made_changes()
         id = cron.key().id()
         if id:
             self.redirect('/saved/%d' % id)
@@ -121,6 +146,7 @@ class Delete(BaseHandler):
             cron = get_cron_by_id(id)
             if cron:
                 cron.delete()
+                made_changes()
         self.redirect('/')
 
 class Toggle(BaseHandler):
@@ -130,6 +156,7 @@ class Toggle(BaseHandler):
             if cron:
                 cron.active = cron.active == False
                 cron.save()
+                made_changes()
         self.redirect('/')
 
 class Run(BaseHandler):
@@ -153,8 +180,8 @@ class Run(BaseHandler):
 
     def get(self):
         year,mon,mday,hour,min,sec,wday,yday,isdst = time.localtime()
-        res = Crons.all().\
-                    filter('active =', True).\
+        active_crons = get_active_crons()
+        res = active_crons.\
                     filter('minutes IN',  [min]).\
                     filter('hours IN',    [hour]).\
                     filter('weekdays IN', [wday])
@@ -170,7 +197,7 @@ class Run(BaseHandler):
             if not run:
                 logging.info('running %s %s', cron.method, cron.url)
                 run = self.fetch(cron.url, cron.method, cron.payload)
-                memcache.set(cron.url, run, time = 30)
+                memcache.set(cron.url, 1, time = 30)
                 cron.lastrun = db.DateTimeProperty.now()
                 cron.save()
 
