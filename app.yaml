@@ -1,0 +1,23 @@
+application: webcrontab
+version: v1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /static
+  static_dir: static
+
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+
+- url: /run
+  login: admin
+  secure: always
+  script: main.py
+
+- url: /.*
+  login: admin
+  secure: always
+  script: main.py
+

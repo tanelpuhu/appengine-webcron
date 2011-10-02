@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>
+      {% block title %}WebCron{% endblock title %}
+    </title>
+    <link rel='stylesheet' type='text/css' href='/static/style.css' />
+    {% block head %}{% endblock head %}
+  </head>
+  <body>
+    <h1>WebCron</h1>
+    <b>{{users.get_current_user.email}}</b>
+
+    <br/>
+
+    {% block buttons %}
+      <a href='/add'>Add new</a>
+    {% endblock buttons %}
+
+    <hr/>
+
+    <div class='content'>
+      {% block body %}
+        Nothing to show :(
+      {% endblock body %}
+    </div>
+
+    <hr/>
+  
+    Current server time is : {% now "jS M Y H:i:s" %}
+  </body>
+</html>

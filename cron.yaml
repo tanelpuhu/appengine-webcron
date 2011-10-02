@@ -1,0 +1,4 @@
+cron:
+- description: crontab
+  url: /run
+  schedule: every 1 minutes

@@ -1,0 +1,63 @@
+{% extends "base.html"%}
+
+{% block title %}
+Main :: {{block.super}}
+{% endblock title %}
+
+{% block body %}
+  {% if rows %}
+  <table border=0 cellpadding=2 cellspacing=2>
+    <thead>
+      <tr>
+        <td>name</td>
+        <td>method</td>
+        <td>url</td>
+        <td>minute(s)</td>
+        <td>hour(s)</td>
+        <td>weekday(s)</td>
+        <td>last run</td>
+        <td>modified at</td>
+        <td>created</td>
+        <td colspan=3>action</td>
+      </tr>
+    </thead>
+  {% for row in rows %}
+    <tr>
+      <td>{{row.name|escape}}</td>
+      <td>{{row.method}}</td>
+      <td>{{row.url|urlizetrunc:40}}</td>
+      <td>
+        {% for minute in row.minutes %}
+          {{minute}}
+        {% endfor%}
+      </td>
+      <td>
+        {% for hour in row.hours %}
+          {{hour}}
+        {% endfor%}
+      </td>
+      <td>
+        {% for weekday in row.weekdays %}
+          {{weekday}}
+        {% endfor%}
+      </td>
+      <td>{{row.lastrun|date:"d/M H:i:s"}}</td>
+      <td>{{row.modified|date:"d/M H:i:s"}}</td>
+      <td>{{row.created|date:"d/M H:i:s"}}</td>
+      <td><a href='/edit/{{row.key.id}}'>Edit</a></td>
+      <td><a href='/toggle/{{row.key.id}}'>
+        {% if row.active %}
+          Deactivate
+        {% else %}
+          Activate
+        {% endif %}</a></td>
+      <td>
+        <a href='/delete/{{row.key.id}}'>Delete</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </table>
+  {% else %}
+    0 cronjobs! Click <a href='/add'>here</a> to add one
+  {% endif %}
+{% endblock body %}

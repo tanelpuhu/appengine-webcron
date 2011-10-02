@@ -1,0 +1,26 @@
+body{
+  background-color:#BADA55;
+  font-family:Trebuchet MS, Helvetica, sans-serif;
+  font-size:12px;
+  color:#000;
+  margin:50px;
+}
+
+.content{
+  font-size:13pt;
+}
+
+.element label {
+  display:inline-block;
+  width:100px;
+  text-align:right;
+  vertical-align:top;
+}
+
+thead td {
+  background-color:#994;
+}
+
+.hidden {
+  display:none;
+}

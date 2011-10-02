@@ -1,0 +1,10 @@
+queue:
+# every second
+- name: default
+  rate: 1/s
+  bucket_size: 1
+
+# every 10 seconds
+- name: cron
+  rate: 6/m
+  bucket_size: 1

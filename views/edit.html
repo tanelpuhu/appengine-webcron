@@ -1,0 +1,94 @@
+{% extends "base.html"%}
+
+{% block title %}
+Edit :: {{block.super}}
+{% endblock title %}
+
+{% block head %}
+<script type="text/javascript" src="/static/jquery.js"></script>
+<script type="text/javascript">
+  var method_change = function() {
+    var method = $('#method').val();
+    if(method === 'GET') {
+      $('#methods').hide();
+      $('#payload').val('');
+    } else {
+      $('#methods').show();
+    }
+  };
+  window.onload = function() {
+    method_change();
+  }
+</script>
+
+{% endblock head %}
+
+
+{% block buttons %}
+  <a href='/'>back</a>
+{% endblock buttons %}
+
+{% block body %}
+  {% if id %}
+    <h2>Edit</h2>
+  {% else %}
+    <h2>Add</h2>
+  {% endif %}
+  <hr/>
+  <form method='post'>
+    <div class='element'>
+      <label for='name'>Name:</label>
+      <input type='text' name='name' value='{{current.name}}' id='name' size=50 />
+    </div>
+
+    <div class='element'>
+      <label for='url'>URL:</label>
+      <input type='text' name='url' value='{{current.url}}' id='url' size=50 />
+    </div>
+    
+
+    <div class='element'>
+      <label for='minutes'>Methods:</label>
+      <select name='method' id='method' onchange="method_change();">
+        <option value='GET'{% ifequal current.method "GET" %} selected{% endifequal %}>GET</option>
+        <option value='POST'{% ifequal current.method "POST" %} selected{% endifequal %}>POST</option>
+      </select>
+    </div>
+
+    <div id="methods" class='element{% ifequal "GET" current.method %} hidden{% endifequal %}'>
+      <label for='method'>Payload:</label>
+      <textarea name="payload" id="payload" cols=50 rows=10>{{current.payload}}</textarea>
+    </div>
+
+    <div class='element'>
+      <label for='minutes'>Minutes:</label>
+      <select name='minutes' id='minutes' size=12 multiple>
+        {% for minute in allminutes %}
+          <option value='{{minute}}'{% for x in current.minutes %}{% ifequal x minute %} selected{% endifequal %}{% endfor%}>{{minute}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class='element'>
+      <label for='hours'>Hours:</label>
+      <select name='hours' id='hours' size=12 multiple>
+        {% for hour in allhours %}
+          <option value='{{hour}}'{% for x in current.hours %}{% ifequal x hour %} selected{% endifequal %}{% endfor%}>{{hour}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+
+    <div class='element'>
+      <label for='weekdays'>Weekdays:</label>
+      <select name='weekdays' id='weekdays' size=7 multiple>
+        {% for weekday in allweekdays %}
+          <option value='{{forloop.counter0}}'{% for x in current.weekdays %}{% ifequal x forloop.parentloop.counter0 %} selected{% endifequal %}{% endfor%}>{{weekday}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <input type='submit' name='' value=' - Save - ' id='' />
+  </form>
+
+{% endblock body %}

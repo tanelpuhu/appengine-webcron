@@ -1,0 +1,5 @@
+appengine-webcron
+
+for personal use (in app.yaml you'll see "login: admin" and "secure: always") 
+
+GET or POST payload to given URL.
