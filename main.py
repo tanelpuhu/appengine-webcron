@@ -7,14 +7,11 @@ from google.appengine.api.labs import taskqueue
 from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.api import urlfetch
+from models import Crons
 import logging
+import time
 import os
 
-from models import Crons
-import time
-
-MIN_RANGE = 15
-HOURS = range(0,24)
 DAYS  = [
     "MONDAY",
     "TUESDAY",
@@ -24,6 +21,7 @@ DAYS  = [
     "SATURDAY",
     "SUNDAY"
 ]
+
 MONTHS = [
     "JANUARY",
     "FEBRUARY",
@@ -151,15 +149,14 @@ class Run(BaseHandler):
                                 deadline = 10,
                                 method = method,
                                 payload = payload
-
             )
 
     def get(self):
         year,mon,mday,hour,min,sec,wday,yday,isdst = time.localtime()
         res = Crons.all().\
                     filter('active =', True).\
-                    filter('minutes IN',    [min]).\
-                    filter('hours IN',        [hour]).\
+                    filter('minutes IN',  [min]).\
+                    filter('hours IN',    [hour]).\
                     filter('weekdays IN', [wday])
         for r in res:
             self.add(r.key().id())
@@ -167,7 +164,7 @@ class Run(BaseHandler):
     def post(self):
         cron = get_cron_by_id(self.request.get('id'))
         if not cron:
-                return
+            return
         def intransaction():
             run = memcache.get(cron.url)
             if not run:
@@ -188,7 +185,10 @@ def main():
         ('/toggle/(?P<id>.*)', Toggle),
         ('/.*', Main),
     ]
-    application = webapp.WSGIApplication(URLS, debug = False)
+    application = webapp.WSGIApplication(
+        URLS,
+        debug = False
+    )
     run_wsgi_app(application)
 
 if __name__ == '__main__':
