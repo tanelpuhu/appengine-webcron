@@ -180,6 +180,8 @@ class Run(BaseHandler):
 
     def get(self):
         year,mon,mday,hour,min,sec,wday,yday,isdst = time.localtime()
+        if min not in ALLMINUTES:
+            return
         active_crons = get_active_crons()
         res = active_crons.\
                     filter('minutes IN',  [min]).\
