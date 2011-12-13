@@ -9,7 +9,7 @@ Main :: {{block.super}}
   <table border=0 cellpadding=6 cellspacing=0>
     <thead>
       <tr>
-        <td>name</td>
+        <td colspan=2>name</td>
         <td>method</td>
         <td>url</td>
         <td>minute(s)</td>
@@ -22,29 +22,32 @@ Main :: {{block.super}}
       </tr>
     </thead>
   {% for row in rows %}
-    <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}{%if not row.active %} deactive{% endif%}">
-      <td>{{row.name|escape}}</td>
+    <tr class="{% cycle 'even' 'odd' %} {{ row.active|yesno:"active,deactive" }}">
+      <td class="status">&nbsp;</td>
       <td>
-        {{row.method}}
+        {{ row.name|escape }}
+      </td>
+      <td>
+        {{ row.method }}
         {% if row.response_email %}<br>(+email){% endif%}
         {% if row.response_post %}<br>(+post){% endif%}
       </td>
       <td>
-        {{row.url|urlizetrunc:40}}
+        {{ row.url|urlizetrunc:40 }}
       </td>
       <td>
-        {% for minute in row.minutes %}
-          {{minute}}
-        {% endfor%}
+        {{ row.minutes|join:', ' }}
       </td>
       <td>
-        {% for hour in row.hours %}
-          {{hour}}
-        {% endfor%}
+        {{ row.hours|join:', ' }}
       </td>
       <td>
-        {% for weekday in row.weekdays %}
-          {{weekday}}
+        {% for xid, xwday in allweekdays %}
+          {% for weekday in row.weekdays %}
+            {% if xid == weekday %}
+              {{ xwday }}
+            {% endif %}
+          {% endfor%}
         {% endfor%}
       </td>
       <td>
@@ -64,11 +67,7 @@ Main :: {{block.super}}
       </td>
       <td>
         <a href='/toggle/{{row.key.id}}'>
-          {% if row.active %}
-            OFF
-          {% else %}
-            ON
-          {% endif %}
+          {{ row.active|yesno:"OFF,ON" }}
         </a>
       </td>
       <td>

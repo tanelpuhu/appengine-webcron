@@ -18,28 +18,28 @@ EMAIL_FROM = 'cron@webcrontab.appspotmail.com'
 ALLMINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
 DAYS  = [
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
-    "SUNDAY"
+    (0, "monday"),
+    (1, "tuesday"),
+    (2, "wednesday"),
+    (3, "thursday"),
+    (4, "friday"),
+    (5, "saturday"),
+    (6, "sunday")
 ]
 
 MONTHS = [
-    "JANUARY",
-    "FEBRUARY",
-    "MARCH",
-    "APRIL",
-    "MAY",
-    "JUNE",
-    "JULY",
-    "AUGUST",
-    "SEPTEMBER",
-    "OCTOBER",
-    "NOVEMBER",
-    "DECEMBER"
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december"
 ]
 
 def get_all_crons():

@@ -20,7 +20,7 @@ Edit :: {{block.super}}
         var has_checked = $('.' + cls + ':checked').length;
         $('.' + cls).prop('checked', !has_checked)
         return undef;
-      }
+      };
   window.onload = function() {
     method_change();
   }
@@ -71,7 +71,9 @@ Edit :: {{block.super}}
         </a>
       </label>
       {% for minute in allminutes %}
-        <input class='minute' type='checkbox' name='minutes' value='{{minute}}' id='minute_{{minute}}'{% for x in current.minutes %}{% ifequal x minute %} checked{% endifequal %}{% endfor%}>
+        <input class='minute' type='checkbox' name='minutes' value='{{minute}}' id='minute_{{minute}}' {% if minute in current.minutes %} checked{% endif %}>
+
+
         <label for='minute_{{minute}}'>{{minute}}</label>
       {% endfor %}
     </div>
@@ -83,7 +85,7 @@ Edit :: {{block.super}}
         </a>
       </label>
       {% for hour in allhours %}
-        <input class='hour' type='checkbox' name='hours' value='{{hour}}' id='hour_{{hour}}'{% for x in current.hours %}{% ifequal x hour %} checked{% endifequal %}{% endfor%}>
+        <input class='hour' type='checkbox' name='hours' value='{{hour}}' id='hour_{{hour}}'{% if hour in current.hours %} checked{% endif %}>
         <label for='hour_{{hour}}'>{{hour}}</label>
       {% endfor %}
     </div>
@@ -95,8 +97,9 @@ Edit :: {{block.super}}
           Weekdays:
         </a>
       </label>
-      {% for weekday in allweekdays %}
-        <input class='weekday' type='checkbox' name='weekdays' value='{{forloop.counter0}}' id='weekday_{{weekday}}'{% for x in current.weekdays %}{% ifequal x forloop.parentloop.counter0 %} checked{% endifequal %}{% endfor%}>
+
+      {% for widx, weekday in allweekdays %}
+        <input class='weekday' type='checkbox' name='weekdays' value='{{widx}}' id='weekday_{{weekday}}'{% if widx in current.weekdays %} checked{% endif %}>
         <label for='weekday_{{weekday}}'>{{weekday}}</label>
       {% endfor %}
     </div>

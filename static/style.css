@@ -54,3 +54,11 @@ thead td {
 .deactive td {
   color: #999;
 }
+
+.deactive td.status {
+  border-left: 6px solid red;
+}
+
+.active td.status {
+  border-left: 6px solid green;
+}
