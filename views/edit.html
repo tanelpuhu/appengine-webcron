@@ -8,21 +8,25 @@ Edit :: {{block.super}}
 <script type="text/javascript" src="/static/jquery.js"></script>
 <script type="text/javascript">
   var method_change = function() {
-    var method = $('#method').val();
-    if(method === 'GET') {
-      $('#methods').hide();
-      $('#payload').val('');
-    } else {
-      $('#methods').show();
-    }
-  };
+        var method = $('#method').val();
+        if(method === 'GET') {
+          $('#methods').hide();
+          $('#payload').val('');
+        } else {
+          $('#methods').show();
+        }
+      },
+      toggle = function(cls, undef) {
+        var has_checked = $('.' + cls + ':checked').length;
+        $('.' + cls).prop('checked', !has_checked)
+        return undef;
+      }
   window.onload = function() {
     method_change();
   }
 </script>
 
 {% endblock head %}
-
 
 {% block buttons %}
   <a href='/'>back</a>
@@ -34,21 +38,21 @@ Edit :: {{block.super}}
   {% else %}
     <h2>Add</h2>
   {% endif %}
-  <hr/>
+
   <form method='post'>
     <div class='element'>
-      <label for='name'>Name:</label>
-      <input type='text' name='name' value='{{current.name}}' id='name' size=50 />
+      <label class='label' for='name'>Name:</label>
+      <input class='text' type='text' name='name' value='{{current.name}}' id='name' size=50 />
     </div>
 
     <div class='element'>
-      <label for='url'>URL:</label>
-      <input type='text' name='url' value='{{current.url}}' id='url' size=50 />
+      <label class='label' for='url'>URL:</label>
+      <input class='text' type='text' name='url' value='{{current.url}}' id='url' size=50 />
     </div>
     
 
     <div class='element'>
-      <label for='minutes'>Methods:</label>
+      <label class='label' for='method'>Methods:</label>
       <select name='method' id='method' onchange="method_change();">
         <option value='GET'{% ifequal current.method "GET" %} selected{% endifequal %}>GET</option>
         <option value='POST'{% ifequal current.method "POST" %} selected{% endifequal %}>POST</option>
@@ -56,39 +60,66 @@ Edit :: {{block.super}}
     </div>
 
     <div id="methods" class='element{% ifequal "GET" current.method %} hidden{% endifequal %}'>
-      <label for='method'>Payload:</label>
+      <label class='label' for='method'>Payload:</label>
       <textarea name="payload" id="payload" cols=50 rows=10>{{current.payload}}</textarea>
     </div>
 
     <div class='element'>
-      <label for='minutes'>Minutes:</label>
-      <select name='minutes' id='minutes' size=12 multiple>
-        {% for minute in allminutes %}
-          <option value='{{minute}}'{% for x in current.minutes %}{% ifequal x minute %} selected{% endifequal %}{% endfor%}>{{minute}}</option>
-        {% endfor %}
-      </select>
+      <label class='label' for='minutes'>
+        <a href="javascript:toggle('minute')">
+          Minutes:
+        </a>
+      </label>
+      {% for minute in allminutes %}
+        <input class='minute' type='checkbox' name='minutes' value='{{minute}}' id='minute_{{minute}}'{% for x in current.minutes %}{% ifequal x minute %} checked{% endifequal %}{% endfor%}>
+        <label for='minute_{{minute}}'>{{minute}}</label>
+      {% endfor %}
     </div>
 
     <div class='element'>
-      <label for='hours'>Hours:</label>
-      <select name='hours' id='hours' size=12 multiple>
-        {% for hour in allhours %}
-          <option value='{{hour}}'{% for x in current.hours %}{% ifequal x hour %} selected{% endifequal %}{% endfor%}>{{hour}}</option>
-        {% endfor %}
-      </select>
+      <label class='label' for='hours'>
+        <a href="javascript:toggle('hour')">
+          Hours:
+        </a>
+      </label>
+      {% for hour in allhours %}
+        <input class='hour' type='checkbox' name='hours' value='{{hour}}' id='hour_{{hour}}'{% for x in current.hours %}{% ifequal x hour %} checked{% endifequal %}{% endfor%}>
+        <label for='hour_{{hour}}'>{{hour}}</label>
+      {% endfor %}
     </div>
 
 
     <div class='element'>
-      <label for='weekdays'>Weekdays:</label>
-      <select name='weekdays' id='weekdays' size=7 multiple>
-        {% for weekday in allweekdays %}
-          <option value='{{forloop.counter0}}'{% for x in current.weekdays %}{% ifequal x forloop.parentloop.counter0 %} selected{% endifequal %}{% endfor%}>{{weekday}}</option>
-        {% endfor %}
-      </select>
+      <label class='label' for='weekdays'>
+        <a href="javascript:toggle('weekday')">
+          Weekdays:
+        </a>
+      </label>
+      {% for weekday in allweekdays %}
+        <input class='weekday' type='checkbox' name='weekdays' value='{{forloop.counter0}}' id='weekday_{{weekday}}'{% for x in current.weekdays %}{% ifequal x forloop.parentloop.counter0 %} checked{% endifequal %}{% endfor%}>
+        <label for='weekday_{{weekday}}'>{{weekday}}</label>
+      {% endfor %}
     </div>
 
-    <input type='submit' name='' value=' - Save - ' id='' />
+    <hr>
+
+    <div class='element'>
+      <label class='label' for='response_email'>Response to email:</label>
+      <input type='checkbox' name='response_email' id='response_email'{% if current.response_email %} checked{% endif %}>
+      <label for='response_email'>Yes please</label>
+    </div>
+
+    <div class='element'>
+      <label class='label' for='response_post'>Response to http:</label>
+      <input class='text' type='text' name='response_post' value='{{current.response_post}}' id='response_post' size=50 />
+    </div>
+
+    <hr>
+
+    <div class='element'>
+      <label class='label'></label>
+      <input type='submit' name='' value=' - Save - ' id='' />
+    </div>
   </form>
 
 {% endblock body %}

@@ -1,26 +1,56 @@
 body{
-  background-color:#BADA55;
-  font-family:Trebuchet MS, Helvetica, sans-serif;
-  font-size:12px;
-  color:#000;
-  margin:50px;
+  background-color: #BADA55;
+  font-family: Trebuchet MS, Helvetica, sans-serif;
+  font-size: 12px;
+  color: #000;
+  margin: 50px;
 }
 
 .content{
-  font-size:13pt;
+  font-size: 1.2em;
 }
 
-.element label {
-  display:inline-block;
-  width:100px;
-  text-align:right;
-  vertical-align:top;
+.element {
+  line-height: 30px;
+}
+
+.element a {
+  text-decoration: none;
+  color: #0000BD;
+}
+
+.element .label {
+  display: inline-block;
+  width: 130px;
+  text-align: right;
+  vertical-align: top;
+}
+
+input.text {
+  border: 1px solid #9ABC29;
+  padding: 4px;
+  font-size: 1em;
+  font-weight: bold;
+  background-color: #D3E792;
 }
 
 thead td {
-  background-color:#994;
+  background-color: #829A3C;
+  font-weight: bold;
 }
 
 .hidden {
-  display:none;
+  display: none;
+}
+
+.odd td {
+  background-color: #CEF45F;
+}
+
+.even td {
+  background-color: #C3E75A;
+}
+
+.deactive td {
+  color: #999;
 }

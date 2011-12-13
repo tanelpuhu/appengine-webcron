@@ -7,10 +7,13 @@ from google.appengine.api.labs import taskqueue
 from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.api import urlfetch
+from google.appengine.api import mail
 from models import Crons
 import logging
 import time
 import os
+
+EMAIL_FROM = 'cron@webcrontab.appspotmail.com'
 
 ALLMINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
@@ -120,11 +123,19 @@ class Add(BaseHandler):
             cron = get_cron_by_id(id)
         if not cron:
             cron = Crons()
+
+        min_list = to_int_list(self.request.get_all('minutes'), ALLMINUTES)
+        hour_list = to_int_list(self.request.get_all('hours'))
+        week_list = to_int_list(self.request.get_all('weekdays'))
+
+        if 0 in [len(min_list), len(hour_list), len(week_list)]:
+            cron.active = False
+
         cron.name = self.request.get('name')
         cron.url    = self.request.get('url')
-        cron.minutes = to_int_list(self.request.get_all('minutes'), ALLMINUTES)
-        cron.hours = to_int_list(self.request.get_all('hours'))
-        cron.weekdays = to_int_list(self.request.get_all('weekdays'))
+        cron.minutes = min_list
+        cron.hours = hour_list
+        cron.weekdays = week_list
         cron.method = self.request.get('method')
         if cron.method not in ['GET', 'POST']:
             cron.method = 'GET'
@@ -132,6 +143,10 @@ class Add(BaseHandler):
             cron.payload = ''
         else:
             cron.payload = self.request.get('payload') or ''
+
+        cron.response_post = self.request.get('response_post') or ''
+        cron.response_email = self.request.get('response_email', '') != ''
+
         cron.save()
         made_changes()
         id = cron.key().id()
@@ -162,8 +177,8 @@ class Toggle(BaseHandler):
 class Run(BaseHandler):
     def add(self, id):
         taskqueue.add(
-                         url = '/run', 
-                    params = { 'id' : id },
+            url = '/run',
+            params = { 'id' : id },
             queue_name ='cron'
         )
 
@@ -178,17 +193,22 @@ class Run(BaseHandler):
                                 payload = payload
             )
 
-    def get(self):
-        year,mon,mday,hour,min,sec,wday,yday,isdst = time.localtime()
-        if min not in ALLMINUTES:
+    def get(self, id = None):
+        if id is None:
+            year,mon,mday,hour,min,sec,wday,yday,isdst = time.localtime()
+            if min not in ALLMINUTES:
+                return
+            active_crons = get_active_crons()
+            res = active_crons.\
+                        filter('minutes IN',  [min]).\
+                        filter('hours IN',    [hour]).\
+                        filter('weekdays IN', [wday])
+            for r in res.fetch(1000):
+                self.add(r.key().id())
             return
-        active_crons = get_active_crons()
-        res = active_crons.\
-                    filter('minutes IN',  [min]).\
-                    filter('hours IN',    [hour]).\
-                    filter('weekdays IN', [wday])
-        for r in res:
-            self.add(r.key().id())
+        self.add(id)
+        if self.request.referer:
+            self.redirect(self.request.referer)
 
     def post(self):
         cron = get_cron_by_id(self.request.get('id'))
@@ -199,6 +219,8 @@ class Run(BaseHandler):
             if not run:
                 logging.info('running %s %s', cron.method, cron.url)
                 run = self.fetch(cron.url, cron.method, cron.payload)
+                self.send_response_email(run, cron)
+                self.send_response_post(run, cron)
                 memcache.set(cron.url, 1, time = 30)
                 cron.lastrun = db.DateTimeProperty.now()
                 cron.save()
@@ -206,8 +228,43 @@ class Run(BaseHandler):
 
         db.run_in_transaction(intransaction)
 
+    def send_response_post(self, response, cron):
+        if not cron.response_post:
+            return
+        elif response.status_code != 200:
+            logging.info('cannot post response (HTTP %s)', response.status_code)
+            return
+        elif not response.content:
+            logging.info('cannot post response (%s)', 'no content')
+            return
+
+        logging.info('posting response')
+        return urlfetch.fetch(
+            cron.response_post,
+            deadline = 10,
+            method = 'POST',
+            payload = response.content
+        )
+
+    def send_response_email(self, response, cron):
+        if not cron.response_email:
+            return
+        elif not response.content:
+            logging.info('cannot email response (%s)', 'no content')
+            return
+
+        logging.info('sending email')
+        return mail.send_mail(
+            sender = "webcron <%s>" % EMAIL_FROM,
+                to = cron.owner.email(),
+           subject = "Response to your request (%d)" % response.status_code,
+              body = "There was following response to your request:\n\n%s""" %
+                response.content
+        )
+
 def main():
     URLS = [
+        ('/run/(?P<id>.*)', Run),
         ('/run', Run),
         ('/add', Add),
         ('/edit/(?P<id>.*)', Add),
