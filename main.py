@@ -4,6 +4,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 from google.appengine.api.labs import taskqueue
+from google.appengine.api.app_identity import get_application_id
 from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.api import urlfetch
@@ -13,7 +14,7 @@ import logging
 import time
 import os
 
-EMAIL_FROM = 'cron@webcrontab.appspotmail.com'
+EMAIL_FROM = 'webcron <cron@%s.appspotmail.com>'
 
 ALLMINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
@@ -252,14 +253,16 @@ class Run(BaseHandler):
         elif not response.content:
             logging.info('cannot email response (%s)', 'no content')
             return
-
-        logging.info('sending email')
+        sender = EMAIL_FROM % get_application_id()
+        logging.info('sending email from %s to %s', sender, cron.owner.email())
         return mail.send_mail(
-            sender = "webcron <%s>" % EMAIL_FROM,
+            sender = sender,
                 to = cron.owner.email(),
-           subject = "Response to your request (%d)" % response.status_code,
-              body = "There was following response to your request:\n\n%s""" %
-                response.content
+           subject = "Response to your request (%s)" % cron.name,
+              body = "Status: %(status)s\nResponse:\n%(content)s""" % {
+                  'content': response.content,
+                  'status': response.status_code
+              }
         )
 
 def main():
