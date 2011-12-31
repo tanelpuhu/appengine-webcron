@@ -9,17 +9,15 @@
     {% block head %}{% endblock head %}
   </head>
   <body>
-    <h1>WebCron</h1>
-    <b>{{users.get_current_user.email}}</b>
-
-    <br/>
-
-    {% block buttons %}
-      <a href='/stats'>Stats</a> |
-      <a href='/add'>Add new</a>
-    {% endblock buttons %}
-
-    <hr/>
+    <div class="header">
+      <h1>WebCron</h1>
+      <b>{{ users.get_current_user.email }}</b>
+      <br/>
+      {% block buttons %}
+        <a href='/stats'>Stats</a> |
+        <a href='/add'>Add new</a>
+      {% endblock buttons %}
+    </div>
 
     <div class='content'>
       {% block body %}
@@ -27,8 +25,8 @@
       {% endblock body %}
     </div>
 
-    <hr/>
-  
-    Current server time is : {% now "jS M Y H:i:s" %}
+    <div class="footer">
+      Server / UTC time : {% now "jS M Y H:i:s" %}
+    </div>
   </body>
 </html>

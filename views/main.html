@@ -11,9 +11,8 @@ Main :: {{block.super}}
       <tr>
         <td colspan=2>name</td>
         <td>method</td>
-        <td>url</td>
-        <td>minute(s)</td>
         <td>hour(s)</td>
+        <td>minute(s)</td>
         <td>weekday(s)</td>
         <td>last run</td>
         <td>modified at</td>
@@ -28,27 +27,40 @@ Main :: {{block.super}}
         {{ row.name|escape }}
       </td>
       <td>
-        {{ row.method }}
+        {{ row.method }}&nbsp;{{ row.url|urlizetrunc:40 }}
         {% if row.response_email %}<br>(+email){% endif%}
         {% if row.response_post %}<br>(+post){% endif%}
       </td>
       <td>
-        {{ row.url|urlizetrunc:40 }}
+        {% if row.hours|length < 24 %}
+          {{ row.hours|join:', ' }}
+        {% else %} every hour {% endif%}
       </td>
       <td>
-        {{ row.minutes|join:', ' }}
+        {% if row.minutes|length < allminutes|length %}
+          {{ row.minutes|join:', ' }}
+        {% else %} every minute {% endif%}
       </td>
       <td>
-        {{ row.hours|join:', ' }}
-      </td>
-      <td>
-        {% for xid, xwday in allweekdays %}
-          {% for weekday in row.weekdays %}
-            {% if xid == weekday %}
-              {{ xwday }}
-            {% endif %}
-          {% endfor%}
-        {% endfor%}
+        {% if row.weekdays|join:'' == '56' %}
+          weekends
+        {% else %}
+
+          {% if row.weekdays|join:'' == '01234' %}
+            weekdays
+          {% else %}
+            {% if row.weekdays|length < 7 %}
+              {% for xid, xwday in allweekdays %}
+                {% for weekday in row.weekdays %}
+                  {% if xid == weekday %}
+                    {{ xwday }}
+                  {% endif %}
+                {% endfor%}
+              {% endfor%}
+            {% else %} everyday {% endif%}
+          {% endif %}
+        {% endif %}
+
       </td>
       <td>
         {{row.lastrun|date:"d/M H:i:s"}}

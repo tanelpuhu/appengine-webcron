@@ -16,6 +16,8 @@ import os
 
 EMAIL_FROM = 'webcron <cron@%s.appspotmail.com>'
 
+ALLOWED_METHODS = ['GET', 'POST', 'EMAIL']
+
 ALLMINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
 DAYS  = [
@@ -125,7 +127,7 @@ class Add(BaseHandler):
         if not cron:
             cron = Crons()
 
-        min_list = to_int_list(self.request.get_all('minutes'), ALLMINUTES)
+        min_list  = to_int_list(self.request.get_all('minutes'), ALLMINUTES)
         hour_list = to_int_list(self.request.get_all('hours'))
         week_list = to_int_list(self.request.get_all('weekdays'))
 
@@ -133,20 +135,27 @@ class Add(BaseHandler):
             cron.active = False
 
         cron.name = self.request.get('name')
-        cron.url    = self.request.get('url')
         cron.minutes = min_list
         cron.hours = hour_list
         cron.weekdays = week_list
         cron.method = self.request.get('method')
-        if cron.method not in ['GET', 'POST']:
+
+        if cron.method not in ALLOWED_METHODS:
             cron.method = 'GET'
+
         if cron.method == 'GET':
             cron.payload = ''
         else:
             cron.payload = self.request.get('payload') or ''
 
-        cron.response_post = self.request.get('response_post') or ''
-        cron.response_email = self.request.get('response_email', '') != ''
+        if cron.method == 'EMAIL':
+            cron.url = ''
+            cron.response_post = ''
+            cron.response_email = False
+        else:
+            cron.url = self.request.get('url')
+            cron.response_post = self.request.get('response_post') or ''
+            cron.response_email = self.request.get('response_email', '') != ''
 
         cron.save()
         made_changes()
@@ -216,13 +225,21 @@ class Run(BaseHandler):
         if not cron:
             return
         def intransaction():
-            run = memcache.get(cron.url)
-            if not run:
-                logging.info('running %s %s', cron.method, cron.url)
-                run = self.fetch(cron.url, cron.method, cron.payload)
-                self.send_response_email(run, cron)
-                self.send_response_post(run, cron)
-                memcache.set(cron.url, 1, time = 30)
+            changes = False
+            logging.info('running %s %s', cron.method, cron.url)
+            if cron.method in ['GET', 'POST']:
+                run = memcache.get(cron.url)
+                if not run:
+                    run = self.fetch(cron.url, cron.method, cron.payload)
+                    self.send_response_email(run, cron)
+                    self.send_response_post(run, cron)
+                    memcache.set(cron.url, 1, time = 30)
+                    changes = True
+            elif cron.method == 'EMAIL':
+                self.send_method_email(cron)
+                changes = True
+
+            if changes:
                 cron.lastrun = db.DateTimeProperty.now()
                 cron.save()
                 made_changes()
@@ -263,6 +280,17 @@ class Run(BaseHandler):
                   'content': response.content,
                   'status': response.status_code
               }
+        )
+
+    def send_method_email(self, cron):
+        sender = EMAIL_FROM % get_application_id()
+        logging.info('sending email from %s to %s', sender, cron.owner.email())
+
+        return mail.send_mail(
+            sender = sender,
+                to = cron.owner.email(),
+           subject = "Scheduled email (%s)" % cron.name,
+              body = cron.payload
         )
 
 def main():

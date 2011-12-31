@@ -1,13 +1,31 @@
 body{
-  background-color: #BADA55;
+  background-color: #E7EAEF;
   font-family: Trebuchet MS, Helvetica, sans-serif;
   font-size: 12px;
   color: #000;
-  margin: 50px;
+  margin: 0px;
+}
+
+a {
+  text-decoration: none;
+  color: #BD3232;
 }
 
 .content{
   font-size: 1.2em;
+  margin: 10px 50px 10px 50px;
+}
+
+.header {
+  background-color: #F5F5F5;
+  margin: 20px 0px 40px 0px;
+  padding: 10px 50px 10px 50px;
+}
+
+.footer {
+  font-size: 0.9em;
+  text-align: right;
+  padding: 30px 50px 10px 50px;
 }
 
 .element {
@@ -35,7 +53,7 @@ input.text {
 }
 
 thead td {
-  background-color: #829A3C;
+  background-color: #8FB2E0;
   font-weight: bold;
 }
 
@@ -44,16 +62,17 @@ thead td {
 }
 
 .odd td {
-  background-color: #CEF45F;
+  background-color: #DBE6F5;
 }
 
 .even td {
-  background-color: #C3E75A;
+  background-color: #C5D7EF;
 }
 
-.deactive td {
+.deactive td, .deactive a {
   color: #999;
 }
+
 
 .deactive td.status {
   border-left: 6px solid red;

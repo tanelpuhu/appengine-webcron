@@ -15,6 +15,11 @@ Edit :: {{block.super}}
         } else {
           $('#methods').show();
         }
+        if(method == 'EMAIL') {
+          $('.hide-email').hide();
+        } else {
+          $('.hide-email').show();
+        }
       },
       toggle = function(cls, undef) {
         var has_checked = $('.' + cls + ':checked').length;
@@ -33,11 +38,6 @@ Edit :: {{block.super}}
 {% endblock buttons %}
 
 {% block body %}
-  {% if id %}
-    <h2>Edit</h2>
-  {% else %}
-    <h2>Add</h2>
-  {% endif %}
 
   <form method='post'>
     <div class='element'>
@@ -45,7 +45,7 @@ Edit :: {{block.super}}
       <input class='text' type='text' name='name' value='{{current.name}}' id='name' size=50 />
     </div>
 
-    <div class='element'>
+    <div class='element hide-email'>
       <label class='label' for='url'>URL:</label>
       <input class='text' type='text' name='url' value='{{current.url}}' id='url' size=50 />
     </div>
@@ -54,8 +54,9 @@ Edit :: {{block.super}}
     <div class='element'>
       <label class='label' for='method'>Methods:</label>
       <select name='method' id='method' onchange="method_change();">
-        <option value='GET'{% ifequal current.method "GET" %} selected{% endifequal %}>GET</option>
-        <option value='POST'{% ifequal current.method "POST" %} selected{% endifequal %}>POST</option>
+        <option value='GET'{% if current.method == "GET" %} selected{% endif %}>GET</option>
+        <option value='POST'{% if current.method == "POST" %} selected{% endif %}>POST</option>
+        <option value='EMAIL'{% if current.method == "EMAIL" %} selected{% endif %}>EMAIL / Reminder</option>
       </select>
     </div>
 
@@ -104,20 +105,18 @@ Edit :: {{block.super}}
       {% endfor %}
     </div>
 
-    <hr>
+    <hr class='hide-email'>
 
-    <div class='element'>
+    <div class='element hide-email'>
       <label class='label' for='response_email'>Response to email:</label>
       <input type='checkbox' name='response_email' id='response_email'{% if current.response_email %} checked{% endif %}>
       <label for='response_email'>Yes please</label>
     </div>
 
-    <div class='element'>
+    <div class='element hide-email'>
       <label class='label' for='response_post'>Response to http:</label>
       <input class='text' type='text' name='response_post' value='{{current.response_post}}' id='response_post' size=50 />
     </div>
-
-    <hr>
 
     <div class='element'>
       <label class='label'></label>
